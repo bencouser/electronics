@@ -15,6 +15,8 @@ import RPi.GPIO as GPIO
 import time
 
 GPIO.setmode(GPIO.BOARD)
+guesses = 0
+opened = 0
 
 # Key Code setup
 PASSWORD = [4, 7, 8, 2]
@@ -27,14 +29,20 @@ MATRIX = [[1, 2, 3, 'A'],
 ROW = [7, 11, 13, 15]
 COL = [12, 16, 18, 22]
 
-# Servo setup
-GPIO.setup(29, GPIO.OUT)
+for j in range(4):
+    GPIO.setup(COL[j], GPIO.OUT)
+    GPIO.output(COL[j], 1)
+    GPIO.setup(ROW[j], GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-p = GPIO.PWM(7, 50)
+# Servo setup
+GPIO.setup(32, GPIO.OUT)
+
+p = GPIO.PWM(32, 50)
 p.start(7.5)
 
 try:
-    while(True):
+    while(guesses < 4):
+        guesses += 1
         print("What is the index of the first term in the Fibonacci sequence to contain 1000 digits?")
         numberPresses = 0
         guess = []
@@ -50,16 +58,29 @@ try:
                         while(GPIO.input(ROW[i]) == 0):
                             pass
 
-                GPIO.output(COL[i][j], 1)
+                GPIO.output(COL[j], 1)
 
         if guess == PASSWORD:
             print("CORRECT ANSWER")
-            p.ChangeDutyCycle(12.5)
+            p.ChangeDutyCycle(12.50) # box is unlocked in this state
+            print("Box unlocked, press * to lock.")
+            opened = True
+            GPIO.output(COL[0], 0)
+            while(opened):
+                if GPIO.input(ROW[3]) == 0:
+                    opened = False
+            p.ChangeDutyCycle(7.50)
+            print("Box is Locked.")
+            guesses = 0
         else:
             print("INCORRECT ANSWER!")
-
-        
 
 except KeyboardInterrupt:
     p.stop()
     GPIO.cleanup()
+    print("GPIO's are clean")
+
+finally:
+    p.stop()
+    GPIO.cleanup()
+    print("GPIO's are clean")
