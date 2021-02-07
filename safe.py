@@ -12,7 +12,11 @@
 # 
 
 import RPi.GPIO as GPIO
+from picamera import PiCamera
 import time
+import datetime
+
+camera = PiCamera()
 
 GPIO.setmode(GPIO.BOARD)
 guesses = 0
@@ -74,6 +78,8 @@ try:
             guesses = 0
         else:
             print("INCORRECT ANSWER!")
+            dt = str(datetime.datetime.now())
+            camera.capture('/home/pi/Pictures/breakins/{}.jpg'.format(dt))
 
 except KeyboardInterrupt:
     p.stop()
