@@ -97,7 +97,7 @@ try:
             for i in range(1000):
                 for halfstep in range(8):
                     for pin in range(4):
-                        GPIO.output(ControlPins[pin], seq[7 - halfstep][3 - pin])# box is locked in this state
+                        GPIO.output(ControlPins[pin], seq[7 - halfstep][pin])# box is locked in this state
                     time.sleep(0.001)
             print("Box is Locked.")
             guesses = 0
