@@ -24,8 +24,25 @@ GPIO.setmode(GPIO.BOARD)
 guesses = 0
 opened = 0
 
-# Key Code setup
-PASSWORD = [4, 7, 8, 2]
+### Key Code setup ###
+
+def nextTerm(a, b):
+    return a + b
+
+fibonacciNumbers = [1, 1]
+
+def listFibNums(fibNums, N):
+    for i in range(N):
+        newTerm = newTerm(fibNums[i], fibNums[i + 1])
+        if len(str(abs(newTerm))) == 1000:
+            return i + 3
+        fibNums.append(newTerm)
+
+password = listFibNums(fibonacciNumbers, 100000)
+
+PASSWORD = [int(x) for x in str(password)] #done so it aint as easy to steal code
+
+### Key Pad Setup ###
 
 MATRIX = [[1, 2, 3, 'A'],
           [4, 5, 6, 'B'],
@@ -40,7 +57,7 @@ for j in range(4):
     GPIO.output(COL[j], 1)
     GPIO.setup(ROW[j], GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-# Step Motor Setup
+### Step Motor Setup ###
 
 # Config sp pins
 
@@ -60,6 +77,8 @@ seq = [[1, 0, 0, 0],
              [0, 0, 1, 1],
              [0, 0, 0, 1],
              [1, 0, 0, 1]]
+
+### Main Code ###
 
 try:
     while(guesses < 4):
