@@ -9,7 +9,9 @@
 # card shown but pin never entered
 # incorrect pin typed too many times
 # power outage (we do not want the box to be unlocked without power present
-# 
+
+# I Have realised the servo will not work with the lock i have printed
+# will instead use a step motor
 
 import RPi.GPIO as GPIO
 from picamera import PiCamera
@@ -38,11 +40,26 @@ for j in range(4):
     GPIO.output(COL[j], 1)
     GPIO.setup(ROW[j], GPIO.IN, pull_up_down = GPIO.PUD_UP)
 
-# Servo setup
-GPIO.setup(32, GPIO.OUT)
+# Step Motor Setup
 
-p = GPIO.PWM(32, 50)
-p.start(7.5)
+# Config sp pins
+
+ControlPins = [31, 33, 35, 37]
+
+for pin in ControlPins:
+    GPIO.setup(pin, GPIO.OUT)
+    GPIO.output(pin, 0)
+
+# Make Ctrln array for 8 set sequence for half stepping
+
+seq = [[1, 0, 0, 0],
+             [1, 1, 0, 0],
+             [0, 1, 0, 0],
+             [0, 1, 1, 0],
+             [0, 0, 1, 0],
+             [0, 0, 1, 1],
+             [0, 0, 0, 1],
+             [1, 0, 0, 1]]
 
 try:
     while(guesses < 4):
@@ -66,14 +83,22 @@ try:
 
         if guess == PASSWORD:
             print("CORRECT ANSWER")
-            p.ChangeDutyCycle(12.50) # box is unlocked in this state
+            for i in range(1000):
+                for halfstep in range(8):
+                    for pin in range(4):
+                        GPIO.output(ControlPins[pin], seq[halfstep][pin])# box is unlocked in this state
+                    time.sleep(0.001)
             print("Box unlocked, press * to lock.")
             opened = True
             GPIO.output(COL[0], 0)
             while(opened):
                 if GPIO.input(ROW[3]) == 0:
                     opened = False
-            p.ChangeDutyCycle(7.50)
+            for i in range(1000):
+                for halfstep in range(8):
+                    for pin in range(4):
+                        GPIO.output(ControlPins[pin], seq[7 - halfstep][3 - pin])# box is locked in this state
+                    time.sleep(0.001)
             print("Box is Locked.")
             guesses = 0
         else:
@@ -82,11 +107,5 @@ try:
             camera.capture('/home/pi/Pictures/breakins/{}.jpg'.format(dt))
 
 except KeyboardInterrupt:
-    p.stop()
     GPIO.cleanup()
-    print("GPIO's are clean")
-
-finally:
-    p.stop()
-    GPIO.cleanup()
-    print("GPIO's are clean")
+    print("\nGPIO's are clean")
