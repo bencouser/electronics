@@ -33,7 +33,7 @@ fibonacciNumbers = [1, 1]
 
 def listFibNums(fibNums, N):
     for i in range(N):
-        newTerm = newTerm(fibNums[i], fibNums[i + 1])
+        newTerm = nextTerm(fibNums[i], fibNums[i + 1])
         if len(str(abs(newTerm))) == 1000:
             return i + 3
         fibNums.append(newTerm)
